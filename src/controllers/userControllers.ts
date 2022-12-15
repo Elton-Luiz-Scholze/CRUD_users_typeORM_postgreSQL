@@ -5,9 +5,8 @@ import { createUserService } from "../services/userServices";
 const createUserController = async (req: Request, res: Response<IUser>) => {
     const data: IUserRequest = req.body;
     const newUser = await createUserService(data);
-    const { password, ...user } = newUser;
 
-    return res.status(201).json(user);
+    return res.status(201).json(newUser);
 }
 
 export { createUserController };
