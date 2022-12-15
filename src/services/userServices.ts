@@ -16,4 +16,11 @@ const createUserService = async (UserData: IUserRequest): Promise<IUser> => {
     return returnedNewUser;
 }
 
-export { createUserService };
+const listAllUserService = async () => {
+    const userRepository = AppDataSource.getRepository(User);
+    const listUsers = await userRepository.find();
+
+    return listUsers;
+}
+
+export { createUserService, listAllUserService };
