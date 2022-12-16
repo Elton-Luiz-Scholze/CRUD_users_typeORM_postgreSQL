@@ -8,7 +8,7 @@ const createUserSchema: yup.SchemaOf<IUserRequest> = yup.object().shape({
 	isAdm: yup.boolean().required()
 });
 
-const returnNewUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
+const returnUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
     id: yup.string(),
     name: yup.string(),
 	email: yup.string().email(),
@@ -18,4 +18,6 @@ const returnNewUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
     updatedAt: yup.date()
 });
 
-export { createUserSchema, returnNewUserSchema };
+const listUsersSchema = yup.array(returnUserSchema)
+
+export { createUserSchema, returnUserSchema, listUsersSchema };
