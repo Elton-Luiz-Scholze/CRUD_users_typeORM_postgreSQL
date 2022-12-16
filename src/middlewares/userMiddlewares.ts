@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { userRepository } from "../repository/userRepository";
-import { AppError } from "../errors/errors";
 
 const verifyEmailExistsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
     const { email } = req.body;
@@ -55,7 +54,6 @@ const verifyUserIdExistsMiddleware = async (req : Request, res : Response, next 
     const userId = await userRepository.findOneBy({ id: id });
 
     if(!userId) {
-        // throw new AppError(404, "Id not exists");
         res.status(404).json({ message: "Id not exists" });
     }
 
@@ -67,7 +65,6 @@ const verifyUserIsActivIsFalseMiddleware = async (req : Request, res : Response,
     const userId = await userRepository.findOneBy({ id: id });
 
     if(!userId.isActive) {
-        // throw new AppError(404, "Id not exists");
         res.status(400).json({ message: "User is inactive" });
     }
 
