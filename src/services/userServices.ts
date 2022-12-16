@@ -1,4 +1,4 @@
-import { IUser, IUserRequest } from "../interfaces/users";
+import { IUser, IUserRequest, IUserUpdate } from "../interfaces/users";
 import { userRepository } from "../repository/userRepository";
 import { listUsersSchema, returnUserSchema } from "../schemas/userSchemas";
 
@@ -30,4 +30,21 @@ const deleteUserService = async (id: string) => {
     return {};
 }
 
-export { createUserService, listAllUserService, deleteUserService };
+const updatedUserService = async (userData: IUserUpdate,  id: string): Promise<IUserUpdate> => {
+    const user = await userRepository.findOneBy({ id: id });
+    
+    const userUpdated = userRepository.create({ 
+        ...user, 
+        ...userData 
+    });
+
+    await userRepository.save(userUpdated);
+
+    const returnedUserUpdate = await returnUserSchema.validate(userUpdated, {
+        stripUnknown: true
+    })
+
+    return returnedUserUpdate;
+}
+
+export { createUserService, listAllUserService, deleteUserService, updatedUserService };
