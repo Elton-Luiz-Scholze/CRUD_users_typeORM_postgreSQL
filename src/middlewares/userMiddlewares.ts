@@ -90,10 +90,10 @@ const verifyKeysBodyMiddleware = async (req : Request, res : Response, next : Ne
     const keys = Object.keys(req.body);
     
         if(keys.includes("id") || keys.includes("isAdm") || keys.includes("isActive")){
-            throw new AppError(401, "não pode")
+            throw new AppError(401, "The id or isAdmin or isActive field cannot be updated");
         }
     
         return next();
-    }
+}
 
 export { verifyEmailExistsMiddleware, verifyTokenMiddleware, verifyUserPermissionsMiddleware, verifyUserPermissionsUpdateMiddleware, verifyUserIdExistsMiddleware, verifyUserIsActivIsFalseMiddleware, verifyKeysBodyMiddleware };
