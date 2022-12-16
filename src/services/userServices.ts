@@ -1,26 +1,50 @@
-import AppDataSource from "../data-source";
-import { User } from "../entities/userEntity";
-import { IUser, IUserRequest } from "../interfaces/users";
-import { returnNewUserSchema } from "../schemas/userSchemas";
+import { IUser, IUserRequest, IUserUpdate } from "../interfaces/users";
+import { userRepository } from "../repository/userRepository";
+import { listUsersSchema, returnUserSchema } from "../schemas/userSchemas";
 
 const createUserService = async (UserData: IUserRequest): Promise<IUser> => {
-    const userRepository = AppDataSource.getRepository(User);
     const createUser= userRepository.create(UserData);
 
     await userRepository.save(createUser);
 
-    const returnedNewUser = await returnNewUserSchema.validate(createUser, {
+    const returnedNewUser = await returnUserSchema.validate(createUser, {
         stripUnknown: true
     });
 
     return returnedNewUser;
 }
 
-const listAllUserService = async () => {
-    const userRepository = AppDataSource.getRepository(User);
+const listAllUserService = async ()  => {
     const listUsers = await userRepository.find();
 
-    return listUsers;
+    const returnedAllUser = await listUsersSchema.validate(listUsers, {
+        stripUnknown: true
+    });
+
+    return returnedAllUser;
 }
 
-export { createUserService, listAllUserService };
+const deleteUserService = async (id: string) => {
+    await userRepository.save({id: id, isActive: false});
+
+    return {};
+}
+
+const updatedUserService = async (userData: IUserUpdate,  id: string): Promise<IUserUpdate> => {
+    const user = await userRepository.findOneBy({ id: id });
+    
+    const userUpdated = userRepository.create({ 
+        ...user, 
+        ...userData 
+    });
+
+    await userRepository.save(userUpdated);
+
+    const returnedUserUpdate = await returnUserSchema.validate(userUpdated, {
+        stripUnknown: true
+    })
+
+    return returnedUserUpdate;
+}
+
+export { createUserService, listAllUserService, deleteUserService, updatedUserService };

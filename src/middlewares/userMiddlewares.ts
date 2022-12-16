@@ -1,20 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-import AppDataSource from "../data-source";
-import { User } from "../entities/userEntity";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import { userRepository } from "../repository/userRepository";
+import { AppError } from "../errors/errors"
 
 const verifyEmailExistsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
     const { email } = req.body;
 
-    const userRepository = AppDataSource.getRepository(User);
     const findEmail = await userRepository.findOneBy({ email: email});
 
     if(findEmail) {
-        return res.status(400).json({ message: "Email already exists" });
+        throw new AppError(400, "Email already exists");
     }
 
-    next();
+    return next();
 }
 
 const verifyTokenMiddleware = async (req : Request, res : Response, next : NextFunction) => {
@@ -22,14 +21,14 @@ const verifyTokenMiddleware = async (req : Request, res : Response, next : NextF
     let authToken = req.headers.authorization;    
     
     if(!authToken) {
-        return res.status(401).json({message: "Missing authorization headers"});
+        throw new AppError(401, "Missing authorization headers");
     }
     
     authToken = authToken.split(" ")[1];
     
     return jwt.verify(authToken, process.env.SECRET_KEY, (error, decoded: any) => {
         if(error) {
-            return res.status(401).json({message: "Missing authorization headers"});
+            throw new AppError(401, "Missing authorization headers");
         }
 
         req.user = {
@@ -43,12 +42,58 @@ const verifyTokenMiddleware = async (req : Request, res : Response, next : NextF
 }
 
 const verifyUserPermissionsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
-    const { isAdm } = req.user;
+    const { isAdm, id } = req.user;
+    const { idParams } = req.params;
 
-    if(!isAdm) {
-        return res.status(403).json({message: "Missing admin permissions"});
+    if(!isAdm && id !== idParams) {
+        throw new AppError(403, "Missing admin permissions");
     }
+
     return next();
 }
 
-export { verifyEmailExistsMiddleware, verifyTokenMiddleware, verifyUserPermissionsMiddleware };
+const verifyUserPermissionsUpdateMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+    const { isAdm, id } = req.user;
+    const { idParams } = req.params;
+
+    if(!isAdm && id !== idParams) {
+        throw new AppError(401, "Missing admin permissions");
+    }
+
+    return next();
+}
+
+const verifyUserIdExistsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+    const { id } = req.params;
+    const userId = await userRepository.findOneBy({ id: id });
+
+    if(!userId) {
+        throw new AppError(404, "Id not exists");
+    }
+
+    return next();
+}
+
+const verifyUserIsActivIsFalseMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+    const { id } = req.params;
+    const userId = await userRepository.findOneBy({ id: id });
+
+    if(!userId.isActive) {
+        throw new AppError(400, "User is inactive");
+    }
+
+    return next();
+}
+
+const verifyKeysBodyMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+
+    const keys = Object.keys(req.body);
+    
+        if(keys.includes("id") || keys.includes("isAdm") || keys.includes("isActive")){
+            throw new AppError(401, "não pode")
+        }
+    
+        return next();
+    }
+
+export { verifyEmailExistsMiddleware, verifyTokenMiddleware, verifyUserPermissionsMiddleware, verifyUserPermissionsUpdateMiddleware, verifyUserIdExistsMiddleware, verifyUserIsActivIsFalseMiddleware, verifyKeysBodyMiddleware };

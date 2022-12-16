@@ -6,7 +6,7 @@ declare global {
             user: {
                 id: string
                 isAdm: boolean
-            }
+            },
         }
     }
 }

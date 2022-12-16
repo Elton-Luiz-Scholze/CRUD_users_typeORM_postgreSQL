@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { IUser, IUserRequest } from "../interfaces/users";
+import { IUser, IUserRequest, IUserUpdate } from "../interfaces/users";
 
 const createUserSchema: yup.SchemaOf<IUserRequest> = yup.object().shape({
     name: yup.string().max(200).required(),
@@ -8,7 +8,7 @@ const createUserSchema: yup.SchemaOf<IUserRequest> = yup.object().shape({
 	isAdm: yup.boolean().required()
 });
 
-const returnNewUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
+const returnUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
     id: yup.string(),
     name: yup.string(),
 	email: yup.string().email(),
@@ -18,4 +18,12 @@ const returnNewUserSchema: yup.SchemaOf<IUser> = yup.object().shape({
     updatedAt: yup.date()
 });
 
-export { createUserSchema, returnNewUserSchema };
+const listUsersSchema = yup.array(returnUserSchema);
+
+const updatedUserSchema: yup.SchemaOf<IUserUpdate> = yup.object().shape({
+    name: yup.string().max(200).notRequired(),
+	email: yup.string().email().max(200).notRequired(),
+	password: yup.string().max(120).notRequired()
+});
+
+export { createUserSchema, returnUserSchema, listUsersSchema, updatedUserSchema };
