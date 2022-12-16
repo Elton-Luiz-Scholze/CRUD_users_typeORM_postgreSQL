@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { IUser, IUserRequest } from "../interfaces/users"
-import { createUserService, listAllUserService } from "../services/userServices";
+import { createUserService, deleteUserService, listAllUserService } from "../services/userServices";
 
 const createUserController = async (req: Request, res: Response<IUser>) => {
     const data: IUserRequest = req.body;
@@ -15,4 +15,12 @@ const listAllUsersController = async (req: Request, res: Response) => {
     return res.status(200).json(listUsers);
 }
 
-export { createUserController, listAllUsersController };
+const deleteUserController = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userDelete = await deleteUserService(id);
+
+    return res.status(204).json(userDelete);
+
+}
+
+export { createUserController, listAllUsersController, deleteUserController };

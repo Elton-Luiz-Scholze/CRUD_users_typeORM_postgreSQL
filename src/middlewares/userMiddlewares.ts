@@ -1,20 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-import AppDataSource from "../data-source";
-import { User } from "../entities/userEntity";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import { userRepository } from "../repository/userRepository";
+import { AppError } from "../errors/errors";
 
 const verifyEmailExistsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
     const { email } = req.body;
 
-    const userRepository = AppDataSource.getRepository(User);
     const findEmail = await userRepository.findOneBy({ email: email});
 
     if(findEmail) {
         return res.status(400).json({ message: "Email already exists" });
     }
 
-    next();
+    return next();
 }
 
 const verifyTokenMiddleware = async (req : Request, res : Response, next : NextFunction) => {
@@ -51,4 +50,28 @@ const verifyUserPermissionsMiddleware = async (req : Request, res : Response, ne
     return next();
 }
 
-export { verifyEmailExistsMiddleware, verifyTokenMiddleware, verifyUserPermissionsMiddleware };
+const verifyUserIdExistsMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+    const { id } = req.params;
+    const userId = await userRepository.findOneBy({ id: id });
+
+    if(!userId) {
+        // throw new AppError(404, "Id not exists");
+        res.status(404).json({ message: "Id not exists" });
+    }
+
+    return next();
+}
+
+const verifyUserIsActivIsFalseMiddleware = async (req : Request, res : Response, next : NextFunction) => {
+    const { id } = req.params;
+    const userId = await userRepository.findOneBy({ id: id });
+
+    if(!userId.isActive) {
+        // throw new AppError(404, "Id not exists");
+        res.status(400).json({ message: "User is inactive" });
+    }
+
+    return next();
+}
+
+export { verifyEmailExistsMiddleware, verifyTokenMiddleware, verifyUserPermissionsMiddleware, verifyUserIdExistsMiddleware, verifyUserIsActivIsFalseMiddleware };

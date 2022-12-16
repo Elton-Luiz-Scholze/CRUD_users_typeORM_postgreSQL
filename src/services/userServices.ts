@@ -1,10 +1,8 @@
-import AppDataSource from "../data-source";
-import { User } from "../entities/userEntity";
 import { IUser, IUserRequest } from "../interfaces/users";
+import { userRepository } from "../repository/userRepository";
 import { listUsersSchema, returnUserSchema } from "../schemas/userSchemas";
 
 const createUserService = async (UserData: IUserRequest): Promise<IUser> => {
-    const userRepository = AppDataSource.getRepository(User);
     const createUser= userRepository.create(UserData);
 
     await userRepository.save(createUser);
@@ -17,7 +15,6 @@ const createUserService = async (UserData: IUserRequest): Promise<IUser> => {
 }
 
 const listAllUserService = async ()  => {
-    const userRepository = AppDataSource.getRepository(User);
     const listUsers = await userRepository.find();
 
     const returnedAllUser = await listUsersSchema.validate(listUsers, {
@@ -27,4 +24,10 @@ const listAllUserService = async ()  => {
     return returnedAllUser;
 }
 
-export { createUserService, listAllUserService };
+const deleteUserService = async (id: string) => {
+    await userRepository.save({id: id, isActive: false});
+
+    return {};
+}
+
+export { createUserService, listAllUserService, deleteUserService };
